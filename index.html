@@ -100,10 +100,10 @@
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
-              chainId: '0x8163',
+              chainId: '0x8173',
               chainName: 'ApeChain',
               nativeCurrency: { name: 'APE', symbol: 'APE', decimals: 18 },
-              rpcUrls: ['https://rpc.apechain.com/http'],
+              rpcUrls: ['https://rpc.apechain.com'],
               blockExplorerUrls: ['https://explorer.apechain.com']
             }]
           });
