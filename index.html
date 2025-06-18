@@ -1,190 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pixelated Pepes Mint</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Press Start 2P', cursive;
-      background-color: #000;
-      color: #39ff14;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      margin-top: 60px;
-    }
-
-    h1 {
-      font-size: 24px;
-      text-shadow: 2px 2px #ff00ff;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 14px;
-      margin: 5px;
-      border: 2px solid #39ff14;
-      background: #111;
-      color: #39ff14;
-      font-family: 'Press Start 2P', cursive;
-    }
-
-    button:hover {
-      background-color: #39ff14;
-      color: #000;
-      cursor: pointer;
-    }
-
-    .status {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #ff0080;
-    }
-
-    .input-group {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .input-group input {
-      width: 60px;
-      text-align: center;
-    }
-
-    .progress-container {
-      width: 80%;
-      margin: 20px auto;
-      background: #333;
-      border: 2px solid #39ff14;
-      height: 30px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #39ff14;
-      transition: width 0.3s ease-in-out;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Pixelated Pepes Mint</title>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  body {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #000;
+    color: #39ff14;
+    text-align: center;
+    margin: 0; padding: 0;
+  }
+  .container {
+    margin-top: 60px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1 {
+    font-size: 24px;
+    text-shadow: 2px 2px #ff00ff;
+  }
+  input, button {
+    padding: 10px;
+    font-size: 14px;
+    margin: 5px;
+    border: 2px solid #39ff14;
+    background: #111;
+    color: #39ff14;
+    font-family: 'Press Start 2P', cursive;
+  }
+  button:hover {
+    background-color: #39ff14;
+    color: #000;
+    cursor: pointer;
+  }
+  .status {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #ff0080;
+    min-height: 24px;
+  }
+  .input-group {
+    display: inline-flex;
+    align-items: center;
+  }
+  .input-group input {
+    width: 60px;
+    text-align: center;
+  }
+  .progress-bar-container {
+    background: #222;
+    border: 1px solid #39ff14;
+    height: 20px;
+    width: 100%;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+  .progress-bar {
+    background-color: #39ff14;
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  p.free-mint-text {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+  }
+</style>
 </head>
 <body>
   <div class="container">
     <h1>🧠 Pixelated Pepes Mint</h1>
 
-    <button onclick="connectWallet()">🔌 Connect Wallet</button>
+    <button id="connectBtn" onclick="connectWallet()">🔌 Connect Wallet</button>
     <p id="walletAddress">Not connected</p>
 
-    <div>
+    <section>
       <h2>Free Mint</h2>
       <div class="input-group">
         <button onclick="updateInput('freeMintAmount', -1)">-</button>
-        <input type="number" id="freeMintAmount" value="1" min="1" />
+        <input type="number" id="freeMintAmount" value="1" min="1" max="5" />
         <button onclick="updateInput('freeMintAmount', 1)">+</button>
       </div>
       <button onclick="freeMint()">Free Mint</button>
-      <p id="freeMintInfo">Loading free mint data...</p>
-
-      <h3>Free Mint Supply</h3>
-      <div class="progress-container">
-        <div id="freeMintBar" class="progress-bar"></div>
+      <div class="progress-bar-container" aria-label="Free mint usage progress">
+        <div class="progress-bar" id="freeMintProgress"></div>
       </div>
-      <p id="freeMintText">Loading...</p>
-    </div>
+      <p class="free-mint-text" id="freeMintInfo">Loading free mint data...</p>
+    </section>
 
-    <div>
+    <section>
       <h2>Paid Mint</h2>
       <div class="input-group">
         <button onclick="updateInput('mintAmount', -1)">-</button>
-        <input type="number" id="mintAmount" value="1" min="1" />
+        <input type="number" id="mintAmount" value="1" min="1" max="10" />
         <button onclick="updateInput('mintAmount', 1)">+</button>
       </div>
+      <p>Price per NFT: <span id="pricePerNFT">Loading...</span> APE</p>
+      <p>Total price: <span id="totalPrice">Loading...</span> APE</p>
       <button onclick="paidMint()">Paid Mint</button>
-    </div>
+    </section>
 
     <p class="status" id="status"></p>
   </div>
 
-  <script>
-    const CONTRACT_ADDRESS = "0x537cd53d69ae4d3be0b9b255285730e8c6863c5b";
-    const ABI = [{"inputs":[{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_symbol","type":"string"},{"internalType":"string","name":"_initBaseURI","type":"string"},{"internalType":"string","name":"_initContractURI","type":"string"},{"internalType":"uint256","name":"_initialPrice","type":"uint256"},{"internalType":"address","name":"_royaltyReceiver","type":"address"},{"internalType":"address","name":"_initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"ApprovalCallerNotOwnerNorApproved","type":"error"},{"inputs":[],"name":"ApprovalQueryForNonexistentToken","type":"error"},{"inputs":[],"name":"BalanceQueryForZeroAddress","type":"error"},{"inputs":[],"name":"MintERC2309QuantityExceedsLimit","type":"error"},{"inputs":[],"name":"MintToZeroAddress","type":"error"},{"inputs":[],"name":"MintZeroQuantity","type":"error"},{"inputs":[],"name":"NotCompatibleWithSpotMints","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"OwnerQueryForNonexistentToken","type":"error"},{"inputs":[],"name":"OwnershipNotInitializedForExtraData","type":"error"},{"inputs":[],"name":"SequentialMintExceedsLimit","type":"error"},{"inputs":[],"name":"SequentialUpToTooSmall","type":"error"},{"inputs":[],"name":"SpotMintTokenIdTooSmall","type":"error"},{"inputs":[],"name":"TokenAlreadyExists","type":"error"},{"inputs":[],"name":"TransferCallerNotOwnerNorApproved","type":"error"},{"inputs":[],"name":"TransferFromIncorrectOwner","type":"error"},{"inputs":[],"name":"TransferToNonERC721ReceiverImplementer","type":"error"},{"inputs":[],"name":"TransferToZeroAddress","type":"error"},{"inputs":[],"name":"URIQueryForNonexistentToken","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"fromTokenId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"toTokenId","type":"uint256"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"ConsecutiveTransfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"supply","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"perWallet","type":"uint256"}],"name":"FreeMintSettingsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newPrice","type":"uint256"}],"name":"PriceChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"receiver","type":"address"},{"indexed":false,"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"RoyaltyUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"MAX_SUPPLY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"baseURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractMetadataURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"freeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"freeMintActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintPerWallet","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"freeMintsUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lockMetadata","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"metadataLocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"ownerMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"price","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"salePrice","type":"uint256"}],"name":"royaltyInfo","outputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"royaltyAmount","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"royaltyPercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"royaltyReceiver","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newURI","type":"string"}],"name":"setBaseURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newURI","type":"string"}],"name":"setContractURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newSupply","type":"uint256"},{"internalType":"uint256","name":"newPerWallet","type":"uint256"}],"name":"setFreeMintSettings","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newPrice","type":"uint256"}],"name":"setPrice","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"setRoyalty","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"toggleFreeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"result","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+<script>
+  // Contract details
+  const CONTRACT_ADDRESS = "0x537cd53d69ae4d3be0b9b255285730e8c6863c5b";
+  const ABI = [{"inputs":[{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_symbol","type":"string"},{"internalType":"string","name":"_initBaseURI","type":"string"},{"internalType":"string","name":"_initContractURI","type":"string"},{"internalType":"uint256","name":"_initialPrice","type":"uint256"},{"internalType":"address","name":"_royaltyReceiver","type":"address"},{"internalType":"address","name":"_initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"ApprovalCallerNotOwnerNorApproved","type":"error"},{"inputs":[],"name":"ApprovalQueryForNonexistentToken","type":"error"},{"inputs":[],"name":"BalanceQueryForZeroAddress","type":"error"},{"inputs":[],"name":"MintERC2309QuantityExceedsLimit","type":"error"},{"inputs":[],"name":"MintToZeroAddress","type":"error"},{"inputs":[],"name":"MintZeroQuantity","type":"error"},{"inputs":[],"name":"NotCompatibleWithSpotMints","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"OwnerQueryForNonexistentToken","type":"error"},{"inputs":[],"name":"OwnershipNotInitializedForExtraData","type":"error"},{"inputs":[],"name":"SequentialMintExceedsLimit","type":"error"},{"inputs":[],"name":"SequentialUpToTooSmall","type":"error"},{"inputs":[],"name":"SpotMintTokenIdTooSmall","type":"error"},{"inputs":[],"name":"TokenAlreadyExists","type":"error"},{"inputs":[],"name":"TransferCallerNotOwnerNorApproved","type":"error"},{"inputs":[],"name":"TransferFromIncorrectOwner","type":"error"},{"inputs":[],"name":"TransferToNonERC721ReceiverImplementer","type":"error"},{"inputs":[],"name":"TransferToZeroAddress","type":"error"},{"inputs":[],"name":"URIQueryForNonexistentToken","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"fromTokenId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"toTokenId","type":"uint256"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"ConsecutiveTransfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"supply","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"perWallet","type":"uint256"}],"name":"FreeMintSettingsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newPrice","type":"uint256"}],"name":"PriceChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"receiver","type":"address"},{"indexed":false,"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"RoyaltyUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"MAX_SUPPLY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"baseURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractMetadataURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"freeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"freeMintActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintPerWallet","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"freeMintSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"freeMintsUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lockMetadata","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"metadataLocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"ownerMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"price","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"salePrice","type":"uint256"}],"name":"royaltyInfo","outputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"royaltyAmount","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"royaltyPercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"royaltyReceiver","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newURI","type":"string"}],"name":"setBaseURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newURI","type":"string"}],"name":"setContractURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newSupply","type":"uint256"},{"internalType":"uint256","name":"newPerWallet","type":"uint256"}],"name":"setFreeMintSettings","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newPrice","type":"uint256"}],"name":"setPrice","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"setRoyalty","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"toggleFreeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"result","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
-    let web3, contract, userAddress;
+  let web3, contract, userAddress;
 
-    async function connectWallet() {
-      if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          userAddress = accounts[0];
-          document.getElementById("walletAddress").innerText = "🔗 " + userAddress;
-          contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
-          updateFreeMintInfo();
-        } catch (err) {
-          alert("Wallet connection failed.");
-          console.error(err);
-        }
-      } else {
-        alert("Please install MetaMask.");
-      }
-    }
-
-    function updateInput(id, delta) {
-      const input = document.getElementById(id);
-      let val = parseInt(input.value) + delta;
-      if (val < 1) val = 1;
-      input.value = val;
-    }
-
-    async function updateFreeMintInfo() {
+  async function connectWallet() {
+    if (window.ethereum) {
+      web3 = new Web3(window.ethereum);
       try {
-        const used = await contract.methods.freeMintsUsed(userAddress).call();
-        const limit = await contract.methods.freeMintPerWallet().call();
-        const remaining = limit - used;
-
-        document.getElementById("freeMintInfo").innerText = `You have ${remaining} free mints left.`;
-
-        const count = await contract.methods.freeMintCount().call();
-        const max = await contract.methods.freeMintSupply().call();
-        const percent = Math.min(100, (count * 100) / max);
-
-        document.getElementById("freeMintBar").style.width = percent + "%";
-        document.getElementById("freeMintText").innerText = `${count} / ${max} Free Mints Used`;
-      } catch (e) {
-        document.getElementById("freeMintInfo").innerText = `Unable to fetch free mint info.`;
-        document.getElementById("freeMintText").innerText = `Free mint data unavailable.`;
-        console.error(e);
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        document.getElementById("walletAddress").innerText = "🔗 " + userAddress;
+        contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+        document.getElementById("connectBtn").disabled = true;
+        await updateFreeMintInfo();
+        await updatePriceInfo();
+      } catch (err) {
+        alert("Wallet connection failed.");
+        console.error(err);
       }
+    } else {
+      alert("Please install MetaMask or compatible wallet.");
     }
+  }
 
-    async function freeMint() {
-      const quantity = parseInt(document.getElementById("freeMintAmount").value);
-      try {
-        await contract.methods.freeMint(quantity).send({ from: userAddress });
-        document.getElementById("status").innerText = `✅ Free Mint successful (${quantity})`;
-        updateFreeMintInfo();
-      } catch (e) {
-        document.getElementById("status").innerText = "❌ Free Mint failed";
-        console.error(e);
-      }
+  function updateInput(id, delta) {
+    const input = document.getElementById(id);
+    let val = parseInt(input.value) + delta;
+    if (val < parseInt(input.min)) val = parseInt(input.min);
+    if (val > parseInt(input.max)) val = parseInt(input.max);
+    input.value = val;
+
+    // Update price when mintAmount changes
+    if (id === "mintAmount") {
+      updatePriceInfo();
     }
+  }
 
-    async function paidMint() {
+  async function updateFreeMintInfo() {
+    try {
+      const used = await contract.methods.freeMintsUsed(userAddress).call();
+      const limit = await contract.methods.freeMintPerWallet().call();
+      const freeMintCount = await contract.methods.freeMintCount().call();
+
+      const remaining = limit - used;
+      const usedSafe = used > limit ? limit : used; // clamp if any
+      const progressPercent = (usedSafe / limit) * 100;
+
+      document.getElementById("freeMintInfo").innerText = `You have ${remaining > 0 ? remaining : 0} free mints left (Used: ${usedSafe} / Max: ${limit})`;
+      document.getElementById("freeMintProgress").style.width = progressPercent + "%";
+
+    } catch (e) {
+      document.getElementById("freeMintInfo").innerText = "Unable to fetch free mint info.";
+      document.getElementById("freeMintProgress").style.width = "0%";
+      console.error(e);
+    }
+  }
+
+  async function updatePriceInfo() {
+    try {
+      const priceWei = await contract.methods.price().call();
+      const priceAPE = web3.utils.fromWei(priceWei, 'ether');
+      document.getElementById("pricePerNFT").innerText = priceAPE;
+
       const quantity = parseInt(document.getElementById("mintAmount").value);
-      try {
-        const price = await contract.methods.price().call();
-        const total = BigInt(price) * BigInt(quantity);
-        await contract.methods.mint(quantity).send({ from: userAddress, value: total.toString() });
-        document.getElementById("status").innerText = `✅ Paid Mint successful (${quantity})`;
-      } catch (e) {
-        document.getElementById("status").innerText = "❌ Paid Mint failed";
-        console.error(e);
-      }
+      const total = (parseFloat(priceAPE) * quantity).toFixed(5);
+      document.getElementById("totalPrice").innerText = total;
+    } catch (e) {
+      document.getElementById("pricePerNFT").innerText = "N/A";
+      document.getElementById("totalPrice").innerText = "N/A";
+      console.error(e);
     }
-  </script>
+  }
+
+  async function freeMint() {
+    const quantity = parseInt(document.getElementById("freeMintAmount").value);
+    setStatus("");
+    try {
+      await contract.methods.freeMint(quantity).send({ from: userAddress });
+      setStatus(`✅ Free Mint successful (${quantity})`);
+      await updateFreeMintInfo();
+    } catch (e) {
+      setStatus("❌ Free Mint failed: " + (e.message || e));
+      console.error(e);
+    }
+  }
+
+  async function paidMint() {
+    const quantity = parseInt(document.getElementById("mintAmount").value);
+    setStatus("");
+    try {
+      const priceWei = await contract.methods.price().call();
+      const total = BigInt(priceWei) * BigInt(quantity);
+      await contract.methods.mint(quantity).send({ from: userAddress, value: total.toString() });
+      setStatus(`✅ Paid Mint successful (${quantity})`);
+    } catch (e) {
+      setStatus("❌ Paid Mint failed: " + (e.message || e));
+      console.error(e);
+    }
+  }
+
+  function setStatus(text) {
+    document.getElementById("status").innerText = text;
+  }
+
+</script>
 </body>
 </html>
