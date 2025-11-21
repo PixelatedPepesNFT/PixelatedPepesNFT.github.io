@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
-
+  output: "export",          // 🔥 Statik HTML export modu
+  reactCompiler: true,       // İstersen bırakabilirsin
+  images: {
+    unoptimized: true,       // 🔥 next/image statik export için şart
+  },
 };
 
 export default nextConfig;
